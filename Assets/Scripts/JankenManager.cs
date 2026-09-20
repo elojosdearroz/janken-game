@@ -1,9 +1,6 @@
-using System.Collections;
-using System.Collections.Generic;
 using FishNet.Connection;
 using FishNet.Object;
 using TMPro;
-using UnityEngine;
 
 public class JankenManager : NetworkBehaviour
 {
@@ -11,27 +8,32 @@ public class JankenManager : NetworkBehaviour
     private int choiceP1 = -1;
     private int choiceP2 = -1;
     private NetworkConnection connectionP1;
-    public void BotonPiedra() { SubmitPlay(0); }
-    public void BotonPapel() { SubmitPlay(1); }
-    public void BotonTijera() { SubmitPlay(2); }
+    private NetworkConnection connectionP2;
+
+    public void ConfigurePlayers(NetworkConnection p1, NetworkConnection p2)
+    {
+        connectionP1 = p1;
+        connectionP2 = p2;
+    }
+    public void BotonPiedra() => SubmitPlay(0);
+    public void BotonPapel()  => SubmitPlay(1);
+    public void BotonTijera() => SubmitPlay(2);
 
     [ServerRpc(RequireOwnership = false)]
     public void SubmitPlay(int choice, NetworkConnection caller = null)
     {
-        if (connectionP1 == null) 
-        {
-            connectionP1 = caller;
-            choiceP1 = choice;
-            ShowResult("Jugador 1 está listo. Esperando al rival...");
-        }
-        else if (connectionP1 == caller)
+        if (caller == connectionP1)
         {
             choiceP1 = choice;
+            ShowResult("Jugador 1 eligió. Esperando al rival...");
         }
-        else 
+        else if (caller == connectionP2)
         {
             choiceP2 = choice;
+            ShowResult("Jugador 2 eligió. Esperando al rival...");
         }
+        else return;
+
         if (choiceP1 != -1 && choiceP2 != -1)
         {
             SolveGame();
@@ -40,26 +42,23 @@ public class JankenManager : NetworkBehaviour
 
     private void SolveGame()
     {
-        string finalMessage;
-
-        if(choiceP1 == choiceP2)
+        if (choiceP1 == choiceP2)
         {
-            finalMessage = "ES UN EMPATE";
-        } else if  ((choiceP1 == 0 && choiceP2 == 2) ||
-                    (choiceP1 == 1 && choiceP2 == 0) || 
-                    (choiceP1 == 2 && choiceP2 == 1))  
+            ShowResult("ES UN EMPATE");
+        } 
+        else if ((choiceP1 == 0 && choiceP2 == 2) || 
+                (choiceP1 == 1 && choiceP2 == 0) || 
+                (choiceP1 == 2 && choiceP2 == 1))   
         {
-            finalMessage = "¡GANO DEL JUGADOR 1!";
+            ShowResult("¡GANÓ EL JUGADOR 1!");
         }
         else
         {
-            finalMessage = "¡GANO DEL JUGADOR 2!";
+            ShowResult("¡GANÓ EL JUGADOR 2!");
         }
 
-        ShowResult(finalMessage);
         choiceP1 = -1;
         choiceP2 = -1;
-        connectionP1 = null;
     }
 
     [ObserversRpc]

@@ -24,9 +24,14 @@ public class PlayerController : NetworkBehaviour
 
     [Header("Dependencies")]
     [SerializeField] private GameObject personalCamera;
+    public static Transform LocalPlayer;
     public override void OnStartClient()
     {
         base.OnStartClient();
+        if (base.IsOwner)
+        {
+            LocalPlayer = this.transform;
+        }
         if (!base.IsOwner && personalCamera != null)
         {
             personalCamera.SetActive(false);
@@ -35,8 +40,8 @@ public class PlayerController : NetworkBehaviour
     void Start()
     {
         characterController = GetComponent<CharacterController>();
-        // Cursor.lockState = CursorLockMode.Locked;
-        // Cursor.visible = false;
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
     }
 
     void Update()
@@ -71,10 +76,8 @@ public class PlayerController : NetworkBehaviour
             moveDirection.y -= gravity * Time.deltaTime;
         }
 
-        // Move the controller
         characterController.Move(moveDirection * Time.deltaTime);
 
-        // Player and Camera rotation
         if (canMove && personalCamera != null)
         {
             rotationX += -Input.GetAxis("Mouse Y") * lookSpeed;
