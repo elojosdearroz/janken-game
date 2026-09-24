@@ -4,7 +4,7 @@ using FishNet.Object;
 using TMPro;
 using UnityEngine;
 
-public class TableGameManager : NetworkBehaviour
+public class GameTableManager : NetworkBehaviour
 {
     [Header("UI Connections")]
     public GameObject gameCanvas;
@@ -93,5 +93,23 @@ public class TableGameManager : NetworkBehaviour
         Cursor.visible = true;
         if (promptText) promptText.gameObject.SetActive(false);
         if (gameCanvas) gameCanvas.SetActive(true);
+    }
+
+    public void ResetTableServer()
+    {
+        player1Ready = null;
+        player2Ready = null;
+
+        RsetTableClient();
+    }
+
+    [ObserversRpc]
+    public void RsetTableClient()
+    {
+        isLocalPlayerReady = false;
+        
+        if(gameCanvas != null) gameCanvas.SetActive(false);
+
+        if(promptText != null) promptText.text = "";
     }
 }
